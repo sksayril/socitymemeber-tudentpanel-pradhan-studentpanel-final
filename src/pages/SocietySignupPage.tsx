@@ -1,0 +1,78 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import SocietyMemberSignupForm from '../components/forms/SocietyMemberSignupForm';
+import SuccessPopup from '../components/SuccessPopup';
+import { ROUTES } from '../constants/routes';
+
+const SocietySignupPage: React.FC = () => {
+  const { signup, isLoading, error } = useAuth();
+  const navigate = useNavigate();
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+
+  const handleSignup = async (data: any) => {
+    try {
+      await signup(data, 'society');
+      setShowSuccessPopup(true);
+      // Navigate after a short delay to show the popup
+      setTimeout(() => {
+        navigate(ROUTES.SOCIETY.DASHBOARD, { replace: true });
+      }, 2000);
+    } catch (err) {
+      // Error is handled by the auth context
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {/* Header */}
+      <header className="bg-white/80 backdrop-blur-sm shadow-sm border-b border-white/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <Link to={ROUTES.HOME} className="flex items-center">
+              <span className="text-2xl font-bold text-gray-900">← Back to Home</span>
+            </Link>
+            <div className="flex items-center">
+              <span className="text-2xl font-bold text-gray-900">EduPortal</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
+        <div className="w-full max-w-2xl">
+          <SocietyMemberSignupForm
+            onSubmit={handleSignup}
+            onBack={() => navigate(ROUTES.SOCIETY.LOGIN)}
+            isLoading={isLoading}
+            error={error}
+          />
+          
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?{' '}
+              <Link
+                to={ROUTES.SOCIETY.LOGIN}
+                className="font-medium text-purple-600 hover:text-purple-500"
+              >
+                Sign in here
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Success Popup */}
+      <SuccessPopup
+        isOpen={showSuccessPopup}
+        onClose={() => setShowSuccessPopup(false)}
+        title="Account Created Successfully!"
+        message="Welcome to EduPortal! Your society member account has been created and you're now logged in. You'll be redirected to your dashboard shortly."
+        type="success"
+      />
+    </div>
+  );
+};
+
+export default SocietySignupPage;
