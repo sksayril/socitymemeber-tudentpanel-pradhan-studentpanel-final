@@ -1,5 +1,5 @@
 // API Service for handling HTTP requests
-const API_BASE_URL = 'http://localhost:3100/api';
+const API_BASE_URL = 'https://api.padyai.co.in/api';
 
 export interface ApiResponse<T = any> {
   success: boolean;
