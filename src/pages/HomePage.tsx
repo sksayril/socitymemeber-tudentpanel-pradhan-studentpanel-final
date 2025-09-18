@@ -41,13 +41,13 @@ const HomePage: React.FC = () => {
                   <GraduationCap className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">Student Portal</h3>
-                <p className="text-gray-600">Access your courses, fees, and academic information</p>
+                {/* <p className="text-gray-600">Access your courses, fees, and academic information</p> */}
               </div>
               
               <div className="space-y-4">
                 <div className="bg-blue-50 rounded-lg p-4 border border-blue-100">
-                  <h4 className="font-semibold text-blue-900 mb-2">Student Access</h4>
-                  <p className="text-sm text-blue-700 mb-3">Sign in or create your student account</p>
+                  <h4 className="font-semibold text-blue-900 mb-2">Ministary of Corporation</h4>
+                  {/* <p className="text-sm text-blue-700 mb-3">Sign in or create your student account</p> */}
                   <div className="space-y-2">
                     <Link
                       to={ROUTES.STUDENT.LOGIN}
@@ -73,13 +73,13 @@ const HomePage: React.FC = () => {
                   <Building2 className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">Society Portal</h3>
-                <p className="text-gray-600">Manage loans, applications, and member services</p>
+                {/* <p className="text-gray-600">Manage loans, applications, and member services</p> */}
               </div>
               
               <div className="space-y-4">
                 <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
-                  <h4 className="font-semibold text-purple-900 mb-2">Society Member Access</h4>
-                  <p className="text-sm text-purple-700 mb-3">Sign in or create your society member account</p>
+                  <h4 className="font-semibold text-purple-900 mb-2">Society Govt. of NCRT Delhi</h4>
+                  {/* <p className="text-sm text-purple-700 mb-3">Sign in or create your society member account</p> */}
                   <div className="space-y-2">
                     <Link
                       to={ROUTES.SOCIETY.LOGIN}
