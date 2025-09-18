@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
   TrendingUp, 
   Plus, 
@@ -7,7 +8,9 @@ import {
   CreditCard, 
   AlertTriangle,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  Calendar,
+  History
 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { 
@@ -19,9 +22,13 @@ import {
   InvestmentPlanFilters
 } from '../../services/api';
 import InvestmentApplicationForm from './InvestmentApplicationForm';
+import PendingEMIsContent from './PendingEMIsContent';
+import PaymentHistoryContent from './PaymentHistoryContent';
+import DebugPaymentAPI from '../DebugPaymentAPI';
 
 const InvestmentsContent: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'my-investments' | 'investment-plans' | 'new-application'>('my-investments');
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<'my-investments' | 'investment-plans' | 'new-application' | 'pending-emis' | 'payment-history' | 'debug'>('my-investments');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -59,6 +66,14 @@ const InvestmentsContent: React.FC = () => {
   });
 
   useEffect(() => {
+    // Check for tab parameter in URL
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['my-investments', 'investment-plans', 'new-application', 'pending-emis', 'payment-history', 'debug'].includes(tabParam)) {
+      setActiveTab(tabParam as any);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     if (activeTab === 'my-investments') {
       fetchApplications();
     } else if (activeTab === 'investment-plans') {
@@ -66,6 +81,7 @@ const InvestmentsContent: React.FC = () => {
     } else if (activeTab === 'new-application' && investmentPlans.length === 0) {
       fetchInvestmentPlans();
     }
+    // pending-emis and payment-history tabs handle their own data fetching
   }, [filters, planFilters, activeTab]);
 
   const fetchApplications = async () => {
@@ -612,6 +628,9 @@ const InvestmentsContent: React.FC = () => {
               { id: 'my-investments', label: 'My Investments', icon: TrendingUp },
               { id: 'investment-plans', label: 'Investment Plans', icon: Eye },
               { id: 'new-application', label: 'New Application', icon: Plus },
+              { id: 'pending-emis', label: 'Pending EMIs', icon: Calendar },
+              { id: 'payment-history', label: 'Payment History', icon: History },
+              { id: 'debug', label: 'Debug API', icon: AlertTriangle },
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -639,6 +658,9 @@ const InvestmentsContent: React.FC = () => {
               { id: 'my-investments', label: 'My Investments', icon: TrendingUp },
               { id: 'investment-plans', label: 'Investment Plans', icon: Eye },
               { id: 'new-application', label: 'Apply for Investment', icon: Plus },
+              { id: 'pending-emis', label: 'Pending EMIs', icon: Calendar },
+              { id: 'payment-history', label: 'Payment History', icon: History },
+              { id: 'debug', label: 'Debug API', icon: AlertTriangle },
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -663,6 +685,9 @@ const InvestmentsContent: React.FC = () => {
           {activeTab === 'my-investments' && renderApplicationsTab()}
           {activeTab === 'investment-plans' && renderInvestmentPlansTab()}
           {activeTab === 'new-application' && renderNewApplicationTab()}
+          {activeTab === 'pending-emis' && <PendingEMIsContent />}
+          {activeTab === 'payment-history' && <PaymentHistoryContent />}
+          {activeTab === 'debug' && <DebugPaymentAPI />}
         </div>
       </div>
     </div>

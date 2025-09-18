@@ -16,6 +16,7 @@ export const ROUTES = {
     MY_COURSE_DETAIL: '/student/my-courses/:enrollmentId',
     FEES: '/student/fees',
     ATTENDANCE: '/student/attendance',
+    MARKSHEETS: '/student/marksheets',
     PROFILE: '/student/profile',
   },
   

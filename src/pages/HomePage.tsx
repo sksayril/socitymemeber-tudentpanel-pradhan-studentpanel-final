@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { GraduationCap, Building2, Users } from 'lucide-react';
 import { ROUTES } from '../constants/routes';
+import GalleryCarousel from '../components/GalleryCarousel';
 
 const HomePage: React.FC = () => {
   return (
@@ -19,14 +20,17 @@ const HomePage: React.FC = () => {
       {/* Main Content */}
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
         <div className="w-full max-w-4xl">
-          <div className="text-center mb-12">
+        <div className="mt-16">
+            <GalleryCarousel />
+          </div>
+          {/* <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
               Welcome to EduPortal
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Your comprehensive education management system. Choose your portal to get started.
             </p>
-          </div>
+          </div> */}
 
           {/* Login Cards */}
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -122,6 +126,8 @@ const HomePage: React.FC = () => {
               </div>
             </div>
           </div>
+
+          
         </div>
       </div>
     </div>

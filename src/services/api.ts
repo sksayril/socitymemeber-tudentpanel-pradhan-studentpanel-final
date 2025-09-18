@@ -1,11 +1,12 @@
 // API Service for handling HTTP requests
-const API_BASE_URL = 'https://api.padyai.co.in/api';
+const API_BASE_URL = 'http://localhost:3500/api';
 
 export interface ApiResponse<T = any> {
   success: boolean;
   message: string;
   data?: T;
   error?: string;
+  errors?: string[];
 }
 
 export interface StudentSignupData {
@@ -770,6 +771,672 @@ export interface InvestmentPaymentResponse {
   paymentStatus: string;
 }
 
+// Payment-related interfaces
+export interface PaymentOrderRequest {
+  investmentId: string;
+  emiNumber?: number;
+  amount: number;
+  paymentMethod: 'upi' | 'net_banking' | 'credit_card' | 'debit_card' | 'wallet';
+}
+
+export interface PaymentOrderResponse {
+  paymentId: string;
+  transactionId: string;
+  amount: number;
+  paymentOrder: {
+    id: string;
+    amount: number;
+    currency: string;
+    receipt: string;
+    status: string;
+    notes: {
+      investmentId: string;
+      memberId: string;
+      emiNumber?: string;
+      paymentFor: string;
+    };
+  };
+  investmentDetails: {
+    investmentId: string;
+    planName: string;
+    planType: string;
+  };
+}
+
+export interface PaymentCallbackRequest {
+  paymentId: string;
+  transactionId: string;
+  gatewayResponse: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+    gatewayStatus: string;
+  };
+}
+
+export interface PaymentCallbackResponse {
+  paymentId: string;
+  status: string;
+  amount: number;
+}
+
+export interface CashPaymentRequest {
+  investmentId: string;
+  emiNumber?: number;
+  amount: number;
+  remarks?: string;
+}
+
+export interface CashPaymentResponse {
+  paymentId: string;
+  amount: number;
+  paymentType: string;
+  status: string;
+  verificationStatus: string;
+  investmentDetails: {
+    investmentId: string;
+    planName: string;
+    planType: string;
+  };
+  nextSteps: string;
+}
+
+export interface PendingEMI {
+  emiId: string;
+  emiNumber: number;
+  emiAmount: number;
+  dueDate: string;
+  status: string;
+  paidAmount: number;
+  penaltyAmount: number;
+  totalPaidAmount: number;
+  paidDate?: string;
+  isOverdue: boolean;
+  isInGracePeriod: boolean;
+  remindersCount: number;
+  paymentIds: string[];
+  memberDetails: {
+    name: string;
+    memberId: string;
+    email: string;
+    phoneNumber: string;
+  };
+  investmentDetails: {
+    investmentId: string;
+    planName: string;
+    planType: string;
+  };
+}
+
+export interface PendingEMIsResponse {
+  pendingEMIs: PendingEMI[];
+  summary: {
+    totalPendingEMIs: number;
+    totalPendingAmount: number;
+    totalPenaltyAmount: number;
+    overdueEMIs: number;
+  };
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalPendingEMIs: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+export interface PendingEMIsByMonth {
+  month: number;
+  year: number;
+  monthName: string;
+  emiCount: number;
+  totalAmount: number;
+  totalPenalty: number;
+  emis: PendingEMI[];
+}
+
+export interface PendingEMIsMonthlyResponse {
+  pendingEMIsByMonth: PendingEMIsByMonth[];
+  overallSummary: {
+    totalPendingEMIs: number;
+    totalPendingAmount: number;
+    totalPenaltyAmount: number;
+    monthsWithPendingEMIs: number;
+  };
+}
+
+export interface PaymentOptionsResponse {
+  emiDetails: {
+    emiId: string;
+    emiNumber: number;
+    emiAmount: number;
+    dueDate: string;
+    status: string;
+    penaltyAmount: number;
+    totalPaidAmount: number;
+  };
+  paymentOptions: {
+    cash: {
+      available: boolean;
+      amount: number;
+      description: string;
+      instructions: string;
+    };
+    online: {
+      available: boolean;
+      amount: number;
+      description: string;
+      supportedMethods: string[];
+      instructions: string;
+    };
+  };
+  memberDetails: {
+    name: string;
+    memberId: string;
+    email: string;
+  };
+  investmentDetails: {
+    investmentId: string;
+    planName: string;
+    planType: string;
+  };
+}
+
+export interface PaymentHistoryEntry {
+  paymentId: string;
+  transactionId: string;
+  amount: number;
+  paymentType: string;
+  paymentMethod: string;
+  status: string;
+  verificationStatus: string;
+  paymentDate: string;
+  paymentFor: string;
+  emiNumber?: number;
+  screenshots: number;
+  remarks?: string;
+}
+
+export interface PaymentHistoryResponse {
+  paymentHistory: PaymentHistoryEntry[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalPayments: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+export interface PaymentFilters {
+  status?: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'refunded';
+  paymentType?: 'cash' | 'online' | 'cheque' | 'bank_transfer';
+  startDate?: string;
+  endDate?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface PendingEMIFilters {
+  month?: number;
+  year?: number;
+  investmentId?: string;
+  page?: number;
+  limit?: number;
+}
+
+// Loan Request interfaces
+export interface LoanRequestData {
+  loanAmount: number;
+  loanPurpose: string;
+  loanDescription: string;
+  tenureMonths: number;
+  emiAmount: number;
+  interestRate: number;
+}
+
+export interface LoanRequest {
+  requestId: string;
+  loanAmount: number;
+  loanPurpose: string;
+  loanDescription?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'disbursed' | 'completed';
+  emiOptions: {
+    tenureMonths: number;
+    emiAmount: number;
+    interestRate: number;
+  };
+  documents?: LoanDocument[];
+  createdAt: string;
+  updatedAt?: string;
+  approvedAt?: string;
+  disbursedAt?: string;
+  completedAt?: string;
+  rejectionReason?: string;
+  approvedBy?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+}
+
+export interface LoanDocument {
+  documentType: 'identity_proof' | 'address_proof' | 'income_proof' | 'bank_statement' | 'other';
+  documentName: string;
+  documentUrl: string;
+  uploadedAt: string;
+}
+
+export interface LoanRequestResponse {
+  requestId: string;
+  loanAmount: number;
+  loanPurpose: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface LoanRequestsResponse {
+  loanRequests: LoanRequest[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalRequests: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+export interface LoanRequestDetailsResponse {
+  requestId: string;
+  loanAmount: number;
+  loanPurpose: string;
+  loanDescription: string;
+  status: string;
+  emiOptions: {
+    tenureMonths: number;
+    emiAmount: number;
+    interestRate: number;
+  };
+  documents: LoanDocument[];
+  createdAt: string;
+  updatedAt?: string;
+  approvedAt?: string;
+  disbursedAt?: string;
+  completedAt?: string;
+  rejectionReason?: string;
+  approvedBy?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+}
+
+export interface LoanDocumentUploadResponse {
+  documentType: string;
+  documentName: string;
+  documentUrl: string;
+}
+
+export interface LoanRequestUpdateData {
+  loanAmount?: number;
+  loanDescription?: string;
+  emiAmount?: number;
+  tenureMonths?: number;
+  interestRate?: number;
+}
+
+export interface LoanRequestFilters {
+  status?: 'pending' | 'approved' | 'rejected' | 'disbursed' | 'completed';
+  page?: number;
+  limit?: number;
+}
+
+// Comprehensive Dashboard interfaces
+export interface DashboardMember {
+  name: string;
+  memberId: string;
+  email: string;
+  phoneNumber: string;
+  societyName: string;
+  position: string;
+  isActive: boolean;
+  isVerified: boolean;
+  kycStatus: string;
+  lastLogin: string;
+}
+
+export interface UpcomingEMI {
+  emiId: string;
+  emiNumber: number;
+  emiAmount: number;
+  dueDate: string;
+  gracePeriodEndDate: string;
+  penaltyAmount: number;
+  status: string;
+  isOverdue: boolean;
+  daysUntilDue: number;
+  type: string;
+  loanRequestId?: string;
+  loanPurpose?: string;
+  investmentId?: string;
+  planName?: string;
+}
+
+export interface LoanSummary {
+  requestId: string;
+  loanAmount: number;
+  disbursedAmount: number;
+  loanPurpose: string;
+  status: string;
+  createdAt: string;
+  disbursedAt?: string;
+  emiCount: number;
+  paidEMIs: number;
+  pendingEMIs: number;
+  overdueEMIs: number;
+}
+
+export interface MyLoansData {
+  totalLoans: number;
+  totalLoanAmount: number;
+  totalDisbursedAmount: number;
+  statusBreakdown: {
+    pending: number;
+    approved: number;
+    disbursed: number;
+    completed: number;
+    rejected: number;
+  };
+  recentLoans: LoanSummary[];
+}
+
+export interface InvestmentSummary {
+  investmentId: string;
+  principalAmount: number;
+  monthlyInstallment: number;
+  expectedMaturityAmount: number;
+  investmentDate: string;
+  maturityDate: string;
+  status: string;
+  planName: string;
+  planType: string;
+  interestRate: number;
+}
+
+export interface MyInvestmentsData {
+  totalInvestments: number;
+  totalInvestmentAmount: number;
+  totalMaturityAmount: number;
+  statusBreakdown: {
+    active: number;
+    completed: number;
+    paused: number;
+  };
+  recentInvestments: InvestmentSummary[];
+}
+
+export interface RecentPayment {
+  paymentId: string;
+  amount: number;
+  paymentType: string;
+  paymentMethod: string;
+  status: string;
+  verificationStatus: string;
+  paymentDate: string;
+  emiNumber: number;
+  remarks: string;
+}
+
+export interface DashboardStats {
+  emiStats: {
+    total: number;
+    paid: number;
+    pending: number;
+    overdue: number;
+    paymentRate: number;
+  };
+  paymentStats: {
+    total: number;
+    successful: number;
+    pending: number;
+    successRate: number;
+  };
+  amountStats: {
+    totalPaid: number;
+    totalPending: number;
+  };
+}
+
+export interface DashboardNotification {
+  type: string;
+  title: string;
+  message: string;
+  priority: 'low' | 'medium' | 'high';
+  actionRequired: boolean;
+  emiId?: string;
+  amount?: number;
+}
+
+export interface QuickAction {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  route: string;
+  available: boolean;
+}
+
+export interface ComprehensiveDashboardData {
+  member: DashboardMember;
+  upcomingEMIs: UpcomingEMI[];
+  myLoans: MyLoansData;
+  myInvestments: MyInvestmentsData;
+  recentPayments: RecentPayment[];
+  dashboardStats: DashboardStats;
+  notifications: DashboardNotification[];
+  quickActions: QuickAction[];
+}
+
+// Comprehensive Profile interfaces
+export interface PersonalInfo {
+  firstName: string;
+  lastName: string;
+  memberId: string;
+  email: string;
+  phoneNumber: string;
+  dateOfBirth: string;
+  gender: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  emergencyContact: string;
+  emergencyPhone: string;
+  profilePicture: string;
+}
+
+export interface SocietyInfo {
+  societyName: string;
+  societyCode: string;
+  position: string;
+  joiningDate: string;
+  membershipType: string;
+  isActive: boolean;
+  isVerified: boolean;
+}
+
+export interface KYCDocument {
+  documentType: string;
+  documentName: string;
+  documentUrl: string;
+  uploadedAt: string;
+}
+
+export interface KYCInfo {
+  kycStatus: string;
+  submittedAt: string;
+  verifiedAt: string;
+  kycDocuments: KYCDocument[];
+  remarks: string;
+}
+
+export interface AccountSummary {
+  loans: {
+    totalLoans: number;
+    totalLoanAmount: number;
+    totalDisbursedAmount: number;
+    pendingLoans: number;
+    approvedLoans: number;
+    disbursedLoans: number;
+  };
+  investments: {
+    totalInvestments: number;
+    totalInvestmentAmount: number;
+    totalMaturityAmount: number;
+    activeInvestments: number;
+    completedInvestments: number;
+  };
+  emis: {
+    totalEMIs: number;
+    paidEMIs: number;
+    pendingEMIs: number;
+    overdueEMIs: number;
+    totalEMIAmount: number;
+    totalPaidAmount: number;
+    totalPendingAmount: number;
+    paymentRate: number;
+  };
+  payments: {
+    totalPayments: number;
+    successfulPayments: number;
+    pendingPayments: number;
+    totalPaidAmount: number;
+    successRate: number;
+  };
+}
+
+export interface RecentActivity {
+  type: string;
+  title: string;
+  description: string;
+  status: string;
+  date: string;
+  referenceId: string;
+}
+
+export interface ProfileCompleteness {
+  percentage: number;
+  completedFields: number;
+  totalFields: number;
+  missingFields: string[];
+}
+
+export interface MemberStatus {
+  isActive: boolean;
+  isVerified: boolean;
+  kycStatus: string;
+  hasProfilePicture: boolean;
+  hasCompleteProfile: boolean;
+  canApplyForLoan: boolean;
+  canMakeInvestments: boolean;
+  canMakePayments: boolean;
+  overallStatus: string;
+  statusMessage: string;
+}
+
+export interface ComprehensiveProfileData {
+  personalInfo: PersonalInfo;
+  societyInfo: SocietyInfo;
+  kycInfo: KYCInfo;
+  accountSummary: AccountSummary;
+  recentActivity: RecentActivity[];
+  profileCompleteness: ProfileCompleteness;
+  memberStatus: MemberStatus;
+  lastLogin: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Gallery/Thumbnails interfaces
+export interface Thumbnail {
+  _id: string;
+  title: string;
+  description: string;
+  originalImageUrl: string;
+  thumbnailUrl: string;
+  category: string;
+  tags: string[];
+  displayOrder: number;
+  isFeatured: boolean;
+  createdAt: string;
+  thumbnailId: string;
+}
+
+export interface ThumbnailsPagination {
+  currentPage: number;
+  totalPages: number;
+  totalThumbnails: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface ThumbnailsResponse {
+  thumbnails: Thumbnail[];
+  pagination: ThumbnailsPagination;
+}
+
+// Marksheet interfaces
+export interface Marksheet {
+  marksheetNumber: string;
+  studentId: string;
+  courseId: string;
+  batchId: string;
+  academicYear: string;
+  semester: string;
+  examinationType: string;
+  totalMarks: number;
+  maxTotalMarks: number;
+  percentage: number;
+  cgpa: number;
+  overallGrade: string;
+  result: 'PASS' | 'FAIL';
+  status: 'published' | 'draft' | 'pending';
+  isVerified: boolean;
+  verificationCode: string;
+  course: {
+    title: string;
+    category: string;
+  };
+  batch: {
+    name: string;
+    startDate: string;
+  };
+}
+
+export interface MarksheetFilters {
+  page?: number;
+  limit?: number;
+  academicYear?: string;
+  semester?: string;
+  examinationType?: string;
+  result?: 'PASS' | 'FAIL';
+}
+
+export interface MarksheetPagination {
+  currentPage: number;
+  totalPages: number;
+  totalMarksheets: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+export interface MarksheetListResponse {
+  marksheets: Marksheet[];
+  pagination: MarksheetPagination;
+}
+
 class ApiService {
   private getAuthHeaders(): HeadersInit {
     const token = localStorage.getItem('authToken');
@@ -783,9 +1450,15 @@ class ApiService {
   private async handleResponse<T>(response: Response): Promise<ApiResponse<T>> {
     const data = await response.json();
     console.log('API Response:', data);
+    console.log('Response Status:', response.status);
+    console.log('Response Headers:', Object.fromEntries(response.headers.entries()));
     
     if (!response.ok) {
-      throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      // Create a custom error that preserves the full API response
+      const error = new Error(data.message || `HTTP error! status: ${response.status}`);
+      (error as any).apiResponse = data; // Attach the full API response to the error
+      (error as any).status = response.status; // Attach status code
+      throw error;
     }
     
     return data;
@@ -1174,6 +1847,267 @@ class ApiService {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(data),
+    });
+    return this.handleResponse(response);
+  }
+
+  // Marksheet API methods
+  async getMarksheets(filters: MarksheetFilters = {}): Promise<ApiResponse<MarksheetListResponse>> {
+    const queryParams = new URLSearchParams();
+    
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        queryParams.append(key, value.toString());
+      }
+    });
+
+    const url = `${API_BASE_URL}/student/documents/marksheets${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  // Payment API methods for Society Members
+  async generatePaymentOrder(data: PaymentOrderRequest): Promise<ApiResponse<PaymentOrderResponse>> {
+    const response = await fetch(`${API_BASE_URL}/society-member-payments/generate-order`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return this.handleResponse(response);
+  }
+
+  async processPaymentCallback(data: PaymentCallbackRequest): Promise<ApiResponse<PaymentCallbackResponse>> {
+    const response = await fetch(`${API_BASE_URL}/society-member-payments/callback`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return this.handleResponse(response);
+  }
+
+  async createCashPaymentRequest(data: CashPaymentRequest): Promise<ApiResponse<CashPaymentResponse>> {
+    const response = await fetch(`${API_BASE_URL}/society-member-payments/cash-payment`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return this.handleResponse(response);
+  }
+
+  async getPendingEMIs(filters: PendingEMIFilters = {}): Promise<ApiResponse<PendingEMIsResponse>> {
+    const queryParams = new URLSearchParams();
+    
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        queryParams.append(key, value.toString());
+      }
+    });
+
+    const url = `${API_BASE_URL}/society-member-payments/pending-emis${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async getPendingEMIsByMonth(investmentId?: string): Promise<ApiResponse<PendingEMIsMonthlyResponse>> {
+    const queryParams = new URLSearchParams();
+    
+    if (investmentId) {
+      queryParams.append('investmentId', investmentId);
+    }
+
+    const url = `${API_BASE_URL}/society-member-payments/pending-emis/monthly${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async getPaymentOptions(emiId: string): Promise<ApiResponse<PaymentOptionsResponse>> {
+    const response = await fetch(`${API_BASE_URL}/society-member-payments/payment-options/${emiId}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async uploadPaymentScreenshot(paymentId: string, formData: FormData): Promise<ApiResponse<{ paymentId: string; screenshotUrl: string; screenshotType: string }>> {
+    const token = localStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}/society-member-payments/${paymentId}/screenshot`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+    return this.handleResponse(response);
+  }
+
+  async getPaymentHistory(filters: PaymentFilters = {}): Promise<ApiResponse<PaymentHistoryResponse>> {
+    const queryParams = new URLSearchParams();
+    
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        queryParams.append(key, value.toString());
+      }
+    });
+
+    const url = `${API_BASE_URL}/society-member-payments/history${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  // Additional payment API methods
+  async getPaymentDetails(paymentId: string): Promise<ApiResponse<any>> {
+    const response = await fetch(`${API_BASE_URL}/society-member-payments/${paymentId}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async getEMIDetailsForInvestment(investmentId: string): Promise<ApiResponse<any>> {
+    const response = await fetch(`${API_BASE_URL}/society-member-payments/emi/${investmentId}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async getInvestmentPaymentSummary(): Promise<ApiResponse<any>> {
+    const response = await fetch(`${API_BASE_URL}/society-member-payments/summary/investments`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  // Loan Request API methods for Society Members
+  async createLoanRequest(data: LoanRequestData): Promise<ApiResponse<LoanRequestResponse>> {
+    const response = await fetch(`${API_BASE_URL}/loan-requests`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return this.handleResponse(response);
+  }
+
+  async getLoanRequests(filters: LoanRequestFilters = {}): Promise<ApiResponse<LoanRequestsResponse>> {
+    const queryParams = new URLSearchParams();
+    
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        queryParams.append(key, value.toString());
+      }
+    });
+
+    const url = `${API_BASE_URL}/loan-requests${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async getLoanRequestDetails(requestId: string): Promise<ApiResponse<LoanRequestDetailsResponse>> {
+    const response = await fetch(`${API_BASE_URL}/loan-requests/${requestId}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async uploadLoanDocument(
+    requestId: string, 
+    formData: FormData
+  ): Promise<ApiResponse<LoanDocumentUploadResponse>> {
+    const token = localStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}/loan-requests/${requestId}/documents`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+    return this.handleResponse(response);
+  }
+
+  async updateLoanRequest(
+    requestId: string, 
+    data: LoanRequestUpdateData
+  ): Promise<ApiResponse<LoanRequestResponse>> {
+    const response = await fetch(`${API_BASE_URL}/loan-requests/${requestId}`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return this.handleResponse(response);
+  }
+
+  async cancelLoanRequest(requestId: string): Promise<ApiResponse> {
+    const response = await fetch(`${API_BASE_URL}/loan-requests/${requestId}`, {
+      method: 'DELETE',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  // Comprehensive Dashboard API methods
+  async getComprehensiveDashboard(): Promise<ApiResponse<ComprehensiveDashboardData>> {
+    const response = await fetch(`${API_BASE_URL}/society-member/dashboard`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async getUpcomingEMIs(): Promise<ApiResponse<UpcomingEMI[]>> {
+    const response = await fetch(`${API_BASE_URL}/society-member/dashboard/upcoming-emis`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async getMyLoansSummary(): Promise<ApiResponse<MyLoansData>> {
+    const response = await fetch(`${API_BASE_URL}/society-member/dashboard/my-loans`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async getMyInvestmentsSummary(): Promise<ApiResponse<MyInvestmentsData>> {
+    const response = await fetch(`${API_BASE_URL}/society-member/dashboard/my-investments`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  // Comprehensive Profile API method
+  async getComprehensiveProfile(): Promise<ApiResponse<ComprehensiveProfileData>> {
+    const response = await fetch(`${API_BASE_URL}/society-member/profile`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  // Gallery/Thumbnails API method
+  async getThumbnails(page: number = 1, limit: number = 10): Promise<ApiResponse<ThumbnailsResponse>> {
+    const response = await fetch(`${API_BASE_URL}/thumbnails?page=${page}&limit=${limit}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
     });
     return this.handleResponse(response);
   }

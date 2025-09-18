@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, CreditCard, User, LogOut, GraduationCap, Search, Calendar } from 'lucide-react';
+import { Home, CreditCard, User, LogOut, GraduationCap, Search, Calendar, FileText } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ROUTES } from '../../constants/routes';
 
@@ -16,6 +16,7 @@ const StudentSidebar: React.FC = () => {
     { path: ROUTES.STUDENT.DASHBOARD, label: 'Dashboard', icon: Home },
     { path: ROUTES.STUDENT.COURSES, label: 'Browse Courses', icon: Search },
     { path: ROUTES.STUDENT.MY_COURSES, label: 'My Courses', icon: GraduationCap },
+    { path: ROUTES.STUDENT.MARKSHEETS, label: 'Marksheets', icon: FileText },
     { path: ROUTES.STUDENT.FEES, label: 'Fees', icon: CreditCard },
     { path: ROUTES.STUDENT.ATTENDANCE, label: 'Attendance', icon: Calendar },
     { path: ROUTES.STUDENT.PROFILE, label: 'Profile', icon: User },

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, BookOpen, CreditCard, User, GraduationCap, Calendar } from 'lucide-react';
+import { Home, BookOpen, CreditCard, User, GraduationCap, Calendar, FileText } from 'lucide-react';
 import { ROUTES } from '../../constants/routes';
 
 const StudentBottomNav: React.FC = () => {
@@ -8,6 +8,7 @@ const StudentBottomNav: React.FC = () => {
     { path: ROUTES.STUDENT.DASHBOARD, label: 'Dashboard', icon: Home },
     { path: ROUTES.STUDENT.COURSES, label: 'Courses', icon: BookOpen },
     { path: ROUTES.STUDENT.MY_COURSES, label: 'My Courses', icon: GraduationCap },
+    { path: ROUTES.STUDENT.MARKSHEETS, label: 'Marksheets', icon: FileText },
     { path: ROUTES.STUDENT.FEES, label: 'Fees', icon: CreditCard },
     { path: ROUTES.STUDENT.ATTENDANCE, label: 'Attendance', icon: Calendar },
     { path: ROUTES.STUDENT.PROFILE, label: 'Profile', icon: User },

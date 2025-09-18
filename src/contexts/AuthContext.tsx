@@ -173,9 +173,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         toast.success('Account created successfully! Welcome to EduPortal.');
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Signup failed';
+      let errorMessage = 'Signup failed';
+      let validationErrors: string[] = [];
+      
+      if (err instanceof Error) {
+        errorMessage = err.message;
+        
+        // Check if the error contains API response with validation errors
+        if ((err as any).apiResponse?.errors && Array.isArray((err as any).apiResponse.errors)) {
+          validationErrors = (err as any).apiResponse.errors;
+          
+          // Show each validation error as a separate toast
+          validationErrors.forEach((validationError: string) => {
+            toast.error(validationError);
+          });
+          
+          // Set the first validation error as the main error message
+          if (validationErrors.length > 0) {
+            errorMessage = validationErrors[0];
+          }
+        } else {
+          // Show the general error message
+          toast.error(errorMessage);
+        }
+      } else {
+        toast.error(errorMessage);
+      }
+      
       setError(errorMessage);
-      toast.error(errorMessage);
       throw err;
     } finally {
       setIsLoading(false);

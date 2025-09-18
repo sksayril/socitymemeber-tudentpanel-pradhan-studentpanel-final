@@ -40,9 +40,45 @@ const SocietyMemberSignupForm: React.FC<SocietyMemberSignupFormProps> = ({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [skillsInput, setSkillsInput] = useState('');
   const [responsibilitiesInput, setResponsibilitiesInput] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
+
+  const validateField = (name: string, value: string): string => {
+    switch (name) {
+      case 'phoneNumber':
+        // Basic phone number validation - should be 10 digits
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!phoneRegex.test(value.replace(/\D/g, ''))) {
+          return 'Please provide a valid 10-digit phone number';
+        }
+        return '';
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (value && !emailRegex.test(value)) {
+          return 'Please provide a valid email address';
+        }
+        return '';
+      default:
+        return '';
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    // Clear field error when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+    
+    // Validate field
+    const error = validateField(name, value);
+    if (error) {
+      setFieldErrors(prev => ({ ...prev, [name]: error }));
+    }
     
     if (name.startsWith('address.')) {
       const addressField = name.split('.')[1];
@@ -110,6 +146,9 @@ const SocietyMemberSignupForm: React.FC<SocietyMemberSignupFormProps> = ({
       return;
     }
 
+    // Clear any existing field errors before submission
+    setFieldErrors({});
+
     const { confirmPassword, ...submitData } = formData;
     await onSubmit(submitData);
   };
@@ -130,7 +169,8 @@ const SocietyMemberSignupForm: React.FC<SocietyMemberSignupFormProps> = ({
       formData.address.city &&
       formData.address.state &&
       formData.address.zipCode &&
-      formData.password === formData.confirmPassword
+      formData.password === formData.confirmPassword &&
+      Object.keys(fieldErrors).length === 0
     );
   };
 
@@ -146,7 +186,19 @@ const SocietyMemberSignupForm: React.FC<SocietyMemberSignupFormProps> = ({
 
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700 text-sm">{error}</p>
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">Validation Error</h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p>{error}</p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -194,9 +246,15 @@ const SocietyMemberSignupForm: React.FC<SocietyMemberSignupFormProps> = ({
             name="email"
             value={formData.email}
             onChange={handleInputChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+              fieldErrors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
+            }`}
+            placeholder="Enter your email address"
             required
           />
+          {fieldErrors.email && (
+            <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
+          )}
         </div>
 
         <div className="grid md:grid-cols-2 gap-4">
@@ -324,9 +382,15 @@ const SocietyMemberSignupForm: React.FC<SocietyMemberSignupFormProps> = ({
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                fieldErrors.phoneNumber ? 'border-red-300 bg-red-50' : 'border-gray-300'
+              }`}
+              placeholder="Enter 10-digit phone number"
               required
             />
+            {fieldErrors.phoneNumber && (
+              <p className="mt-1 text-sm text-red-600">{fieldErrors.phoneNumber}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
