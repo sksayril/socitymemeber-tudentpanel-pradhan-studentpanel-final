@@ -5,15 +5,15 @@ import LoginForm from '../components/forms/LoginForm';
 import { ROUTES } from '../constants/routes';
 
 const SocietyLoginPage: React.FC = () => {
-  const { login, isLoading, error, clearError } = useAuth();
+  const { login, isLoading, error } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = (location.state as any)?.from?.pathname || ROUTES.SOCIETY.DASHBOARD;
 
-  const handleLogin = async (email: string, password: string) => {
+  const handleLogin = async (email: string, password: string, id: string, loginMethod: 'email' | 'id') => {
     try {
-      await login(email, password, 'society');
+      await login(email, password, id, loginMethod, 'society');
       navigate(from, { replace: true });
     } catch (err) {
       // Error is handled by the auth context

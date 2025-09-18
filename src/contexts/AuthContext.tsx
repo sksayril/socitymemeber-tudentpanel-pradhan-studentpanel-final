@@ -9,7 +9,7 @@ interface AuthContextType {
   isLoading: boolean;
   kycStatus: KYCStatusResponse | null;
   isKYCVerified: boolean;
-  login: (email: string, password: string, type: 'student' | 'society') => Promise<void>;
+  login: (email: string, password: string, id: string, loginMethod: 'email' | 'id', type: 'student' | 'society') => Promise<void>;
   signup: (data: any, type: 'student' | 'society') => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -44,14 +44,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const clearError = () => setError(null);
 
-  const login = async (email: string, password: string, type: 'student' | 'society') => {
+  const login = async (email: string, password: string, id: string, loginMethod: 'email' | 'id', type: 'student' | 'society') => {
     try {
       setIsLoading(true);
       setError(null);
 
       let response;
       if (type === 'student') {
-        response = await apiService.studentLogin({ email, password });
+        if (loginMethod === 'email') {
+          response = await apiService.studentLogin({ email, password });
+        } else {
+          response = await apiService.studentLogin({ studentId: id, password });
+        }
         if (response.data?.student) {
           setUser(response.data.student);
         }
@@ -75,7 +79,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
         toast.success('Welcome back! Login successful.');
       } else {
-        response = await apiService.societyMemberLogin({ email, password });
+        if (loginMethod === 'email') {
+          response = await apiService.societyMemberLogin({ email, password });
+        } else {
+          response = await apiService.societyMemberLogin({ memberId: id, password });
+        }
         console.log('Society member login response:', response);
         
         if (response.data?.member) {

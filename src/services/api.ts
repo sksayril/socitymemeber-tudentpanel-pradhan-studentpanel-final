@@ -53,8 +53,10 @@ export interface SocietyMemberSignupData {
 }
 
 export interface LoginData {
-  email: string;
+  email?: string;
   password: string;
+  studentId?: string;
+  memberId?: string;
 }
 
 export interface User {

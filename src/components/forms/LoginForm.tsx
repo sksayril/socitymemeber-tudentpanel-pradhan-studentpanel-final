@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Hash } from 'lucide-react';
 
 interface LoginFormProps {
   userType: 'student' | 'society';
-  onSubmit: (email: string, password: string) => Promise<void>;
+  onSubmit: (email: string, password: string, id: string, loginMethod: 'email' | 'id') => Promise<void>;
   onBack: () => void;
   onSwitchToSignup: () => void;
   isLoading: boolean;
@@ -21,9 +21,11 @@ const LoginForm: React.FC<LoginFormProps> = ({
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    id: '',
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [loginMethod, setLoginMethod] = useState<'email' | 'id'>('email');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -35,15 +37,54 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit(formData.email, formData.password);
+    await onSubmit(formData.email, formData.password, formData.id, loginMethod);
+  };
+
+  const handleLoginMethodChange = (method: 'email' | 'id') => {
+    setLoginMethod(method);
+    // Clear form data when switching methods
+    setFormData({
+      email: '',
+      password: '',
+      id: '',
+    });
   };
 
   const isFormValid = () => {
-    return formData.email && formData.password;
+    const passwordValid = formData.password && formData.password.length >= 6;
+    
+    if (loginMethod === 'email') {
+      const emailValid = formData.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+      return emailValid && passwordValid;
+    } else {
+      const idValid = formData.id && formData.id.trim().length > 0;
+      return idValid && passwordValid;
+    }
+  };
+
+  const getFieldError = (field: string) => {
+    switch (field) {
+      case 'email':
+        if (loginMethod === 'email' && formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+          return 'Please enter a valid email address';
+        }
+        return null;
+      case 'password':
+        if (formData.password && formData.password.length < 6) {
+          return 'Password must be at least 6 characters long';
+        }
+        return null;
+      case 'id':
+        if (loginMethod === 'id' && formData.id && formData.id.trim().length === 0) {
+          return `${userType === 'student' ? 'Student' : 'Society Member'} ID is required`;
+        }
+        return null;
+      default:
+        return null;
+    }
   };
 
   const userTypeLabel = userType === 'student' ? 'Student' : 'Society Member';
-  const userTypeColor = userType === 'student' ? 'blue' : 'purple';
   const gradientFrom = userType === 'student' ? 'from-blue-500' : 'from-purple-500';
   const gradientTo = userType === 'student' ? 'to-indigo-600' : 'to-pink-600';
   const hoverFrom = userType === 'student' ? 'hover:from-blue-600' : 'hover:from-purple-600';
@@ -67,21 +108,86 @@ const LoginForm: React.FC<LoginFormProps> = ({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            <Mail className="w-4 h-4 inline mr-2" />
-            Email Address
+        {/* Login Method Selection */}
+        <div className="bg-gray-50 rounded-lg p-4">
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Choose Login Method
           </label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 ${focusRing} focus:border-transparent`}
-            placeholder="Enter your email"
-            required
-          />
+          <div className="flex space-x-4">
+            <button
+              type="button"
+              onClick={() => handleLoginMethodChange('email')}
+              className={`flex-1 flex items-center justify-center px-4 py-3 rounded-lg border-2 transition-all ${
+                loginMethod === 'email'
+                  ? `border-${userType === 'student' ? 'blue' : 'purple'}-500 bg-${userType === 'student' ? 'blue' : 'purple'}-50 text-${userType === 'student' ? 'blue' : 'purple'}-700`
+                  : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+              }`}
+            >
+              <Mail className="w-4 h-4 mr-2" />
+              Email Login
+            </button>
+            <button
+              type="button"
+              onClick={() => handleLoginMethodChange('id')}
+              className={`flex-1 flex items-center justify-center px-4 py-3 rounded-lg border-2 transition-all ${
+                loginMethod === 'id'
+                  ? `border-${userType === 'student' ? 'blue' : 'purple'}-500 bg-${userType === 'student' ? 'blue' : 'purple'}-50 text-${userType === 'student' ? 'blue' : 'purple'}-700`
+                  : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+              }`}
+            >
+              <Hash className="w-4 h-4 mr-2" />
+              {userType === 'student' ? 'Student ID' : 'Member ID'} Login
+            </button>
+          </div>
         </div>
+
+        {/* Email Field - Only show when email method is selected */}
+        {loginMethod === 'email' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Mail className="w-4 h-4 inline mr-2" />
+              Email Address
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 ${focusRing} focus:border-transparent ${
+                getFieldError('email') ? 'border-red-300' : 'border-gray-300'
+              }`}
+              placeholder="Enter your email"
+              required
+            />
+            {getFieldError('email') && (
+              <p className="mt-1 text-sm text-red-600">{getFieldError('email')}</p>
+            )}
+          </div>
+        )}
+
+        {/* ID Field - Only show when ID method is selected */}
+        {loginMethod === 'id' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Hash className="w-4 h-4 inline mr-2" />
+              {userType === 'student' ? 'Student ID' : 'Society Member ID'}
+            </label>
+            <input
+              type="text"
+              name="id"
+              value={formData.id}
+              onChange={handleInputChange}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 ${focusRing} focus:border-transparent ${
+                getFieldError('id') ? 'border-red-300' : 'border-gray-300'
+              }`}
+              placeholder={`Enter your ${userType === 'student' ? 'student' : 'society member'} ID`}
+              required
+            />
+            {getFieldError('id') && (
+              <p className="mt-1 text-sm text-red-600">{getFieldError('id')}</p>
+            )}
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -94,7 +200,9 @@ const LoginForm: React.FC<LoginFormProps> = ({
               name="password"
               value={formData.password}
               onChange={handleInputChange}
-              className={`w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 ${focusRing} focus:border-transparent`}
+              className={`w-full px-4 py-3 pr-12 border rounded-lg focus:ring-2 ${focusRing} focus:border-transparent ${
+                getFieldError('password') ? 'border-red-300' : 'border-gray-300'
+              }`}
               placeholder="Enter your password"
               required
             />
@@ -106,6 +214,9 @@ const LoginForm: React.FC<LoginFormProps> = ({
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
+          {getFieldError('password') && (
+            <p className="mt-1 text-sm text-red-600">{getFieldError('password')}</p>
+          )}
         </div>
 
         <div className="flex items-center justify-between">
