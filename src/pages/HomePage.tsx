@@ -98,7 +98,7 @@ const HomePage: React.FC = () => {
               
               <div className="space-y-4">
                 <div className="bg-purple-50 rounded-lg p-4 border border-purple-100">
-                  <h4 className="font-semibold text-purple-900 mb-2">Society Govt. of NCRT Delhi</h4>
+                  <h4 className="font-semibold text-purple-900 mb-2">Govt. of NCT Delhi</h4>
                   {/* <p className="text-sm text-purple-700 mb-3">Sign in or create your society member account</p> */}
                   <div className="space-y-2">
                     <Link
