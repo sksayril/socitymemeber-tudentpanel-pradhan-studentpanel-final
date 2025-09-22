@@ -38,16 +38,16 @@ const StudentLoginPage: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
-        <div className="w-full max-w-md">
-          <LoginForm
-            userType="student"
-            onSubmit={handleLogin}
-            onBack={() => navigate(ROUTES.HOME)}
-            onSwitchToSignup={() => navigate(ROUTES.STUDENT.SIGNUP)}
-            isLoading={isLoading}
-            error={error}
-          />
-          
+        <div className="w-full max-w-md mx-auto">
+            <LoginForm
+              userType="student"
+              onSubmit={handleLogin}
+              onBack={() => navigate(ROUTES.HOME)}
+              onSwitchToSignup={() => navigate(ROUTES.STUDENT.SIGNUP)}
+              isLoading={isLoading}
+              error={error}
+            />
+            
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}

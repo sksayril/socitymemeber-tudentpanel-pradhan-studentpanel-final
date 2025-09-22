@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { GraduationCap, Building2, Users } from 'lucide-react';
 import { ROUTES } from '../constants/routes';
-import GalleryCarousel from '../components/GalleryCarousel';
+import ThumbnailCarousel from '../components/ThumbnailCarousel';
 
 const HomePage: React.FC = () => {
   return (
@@ -12,17 +12,14 @@ const HomePage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-center">
             <GraduationCap className="w-8 h-8 text-indigo-600 mr-3" />
-            <h1 className="text-2xl font-bold text-gray-900">EduPortal</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Samriddhi</h1>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="flex items-center justify-center min-h-[calc(100vh-80px)] p-4">
-        <div className="w-full max-w-4xl">
-        <div className="mt-16">
-            <GalleryCarousel />
-          </div>
+      <div className="py-8 p-4">
+        <div className="w-full max-w-6xl mx-auto">
           {/* <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
               Welcome to EduPortal
@@ -32,8 +29,31 @@ const HomePage: React.FC = () => {
             </p>
           </div> */}
 
+          {/* Gallery Section */}
+          <div className="mb-12">
+            {/* <h3 className="text-2xl font-bold text-center text-gray-900 mb-6">Gallery</h3> */}
+            <div className="max-w-4xl mx-auto">
+              <ThumbnailCarousel
+                className="rounded-xl"
+                autoSlide={true}
+                slideInterval={4000}
+                showDots={true}
+                showCounter={true}
+                usePublicAPI={true}
+                limit={20}
+                onImageClick={(thumbnail) => {
+                  // Open image in new tab when clicked
+                  window.open(thumbnail.originalImageUrl, '_blank');
+                }}
+                onError={(error) => {
+                  console.warn('Gallery error:', error);
+                }}
+              />
+            </div>
+          </div>
+
           {/* Login Cards */}
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {/* Student Login Card */}
             <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-300 hover:scale-105">
               <div className="text-center mb-6">

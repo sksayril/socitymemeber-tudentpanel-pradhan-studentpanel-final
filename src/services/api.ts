@@ -1096,6 +1096,65 @@ export interface LoanRequestFilters {
   limit?: number;
 }
 
+// CD Investment interfaces
+export interface CDInvestmentRequest {
+  investmentAmount: number;
+  tenureMonths: number;
+  purpose: string;
+  notes?: string;
+}
+
+export interface CDInvestment {
+  _id: string;
+  cdId: string;
+  investmentAmount: number;
+  tenureMonths: number;
+  interestRate: number;
+  maturityAmount: number;
+  totalInterest: number;
+  status: 'pending' | 'active' | 'matured' | 'cancelled';
+  isMatured?: boolean;
+  remainingTenure?: number;
+  userDisplayName?: string;
+  requestDate: string;
+  approvalDate?: string;
+  maturityDate?: string;
+}
+
+export interface CDInvestmentResponse {
+  cdInvestment: CDInvestment;
+}
+
+export interface CDInvestmentsListResponse {
+  investments: CDInvestment[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+  };
+  summary: {
+    active: {
+      count: number;
+      totalAmount: number;
+    };
+    pending: {
+      count: number;
+      totalAmount: number;
+    };
+  };
+}
+
+export interface CDInvestmentDetailsResponse {
+  investment: CDInvestment;
+}
+
+export interface CDInvestmentFilters {
+  status?: 'pending' | 'active' | 'matured' | 'cancelled';
+  page?: number;
+  limit?: number;
+}
+
 // Comprehensive Dashboard interfaces
 export interface DashboardMember {
   name: string;
@@ -2109,6 +2168,52 @@ class ApiService {
   // Gallery/Thumbnails API method
   async getThumbnails(page: number = 1, limit: number = 10): Promise<ApiResponse<ThumbnailsResponse>> {
     const response = await fetch(`${API_BASE_URL}/thumbnails?page=${page}&limit=${limit}`, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  // Public Gallery/Thumbnails API method (no authentication required)
+  async getPublicThumbnails(page: number = 1, limit: number = 10): Promise<ApiResponse<ThumbnailsResponse>> {
+    const response = await fetch(`${API_BASE_URL}/thumbnails?page=${page}&limit=${limit}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    return this.handleResponse(response);
+  }
+
+  // CD Investment API methods
+  async requestCDInvestment(data: CDInvestmentRequest): Promise<ApiResponse<CDInvestmentResponse>> {
+    const response = await fetch(`${API_BASE_URL}/cd-investment/request`, {
+      method: 'POST',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return this.handleResponse(response);
+  }
+
+  async getMyCDInvestments(filters: CDInvestmentFilters = {}): Promise<ApiResponse<CDInvestmentsListResponse>> {
+    const queryParams = new URLSearchParams();
+    
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        queryParams.append(key, value.toString());
+      }
+    });
+
+    const url = `${API_BASE_URL}/cd-investment/my-investments${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: this.getAuthHeaders(),
+    });
+    return this.handleResponse(response);
+  }
+
+  async getCDInvestmentDetails(cdId: string): Promise<ApiResponse<CDInvestmentDetailsResponse>> {
+    const response = await fetch(`${API_BASE_URL}/cd-investment/${cdId}`, {
       method: 'GET',
       headers: this.getAuthHeaders(),
     });

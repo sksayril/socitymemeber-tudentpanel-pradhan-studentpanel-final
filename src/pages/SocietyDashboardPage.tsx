@@ -6,6 +6,7 @@ import SocietyHeader from '../components/society/SocietyHeader';
 import SocietyDashboardContent from '../components/society/SocietyDashboardContent';
 import LoansPage from '../components/society/LoansPage';
 import InvestmentsContent from '../components/society/InvestmentsContent';
+import CDInvestmentsContent from '../components/society/CDInvestmentsContent';
 import SocietyProfileContent from '../components/society/SocietyProfileContent';
 import { ROUTES } from '../constants/routes';
 
@@ -26,6 +27,7 @@ const SocietyDashboardPage: React.FC = () => {
             <Route path="dashboard" element={<SocietyDashboardContent />} />
             <Route path="loans" element={<LoansPage />} />
             <Route path="investments" element={<InvestmentsContent />} />
+            <Route path="cd-investments" element={<CDInvestmentsContent />} />
             <Route path="profile" element={<SocietyProfileContent />} />
             <Route path="*" element={<Navigate to={ROUTES.SOCIETY.DASHBOARD} replace />} />
           </Routes>

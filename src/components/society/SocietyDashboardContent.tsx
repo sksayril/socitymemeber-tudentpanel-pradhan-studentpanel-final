@@ -212,6 +212,20 @@ const SocietyDashboardContent: React.FC = () => {
               </div>
             </button>
           ))}
+          
+          {/* CD Investment Quick Action */}
+          <button
+            onClick={() => navigate('/society/cd-investments')}
+            className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors text-left"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium text-gray-900">CD Investment</h4>
+                <p className="text-sm text-gray-600">Request Certificate of Deposit</p>
+              </div>
+              <ArrowRight className="w-5 h-5 text-gray-400" />
+            </div>
+          </button>
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, CreditCard, User, TrendingUp } from 'lucide-react';
+import { Home, CreditCard, User, TrendingUp, Banknote } from 'lucide-react';
 import { ROUTES } from '../../constants/routes';
 
 const SocietyBottomNav: React.FC = () => {
@@ -8,6 +8,7 @@ const SocietyBottomNav: React.FC = () => {
     { path: ROUTES.SOCIETY.DASHBOARD, label: 'Dashboard', icon: Home },
     { path: ROUTES.SOCIETY.LOANS, label: 'Loans', icon: CreditCard },
     { path: ROUTES.SOCIETY.INVESTMENTS, label: 'Investments', icon: TrendingUp },
+    { path: ROUTES.SOCIETY.CD_INVESTMENTS, label: 'CD Investment', icon: Banknote },
     { path: ROUTES.SOCIETY.PROFILE, label: 'Profile', icon: User },
   ];
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, CreditCard, User, LogOut, Building2, TrendingUp } from 'lucide-react';
+import { Home, CreditCard, User, LogOut, Building2, TrendingUp, Banknote } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ROUTES } from '../../constants/routes';
 
@@ -16,6 +16,7 @@ const SocietySidebar: React.FC = () => {
     { path: ROUTES.SOCIETY.DASHBOARD, label: 'Dashboard', icon: Home },
     { path: ROUTES.SOCIETY.LOANS, label: 'Loans', icon: CreditCard },
     { path: ROUTES.SOCIETY.INVESTMENTS, label: 'Investments', icon: TrendingUp },
+    { path: ROUTES.SOCIETY.CD_INVESTMENTS, label: 'CD Investment', icon: Banknote },
     { path: ROUTES.SOCIETY.PROFILE, label: 'Profile', icon: User },
   ];
 

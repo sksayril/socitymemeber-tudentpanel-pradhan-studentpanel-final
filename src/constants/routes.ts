@@ -28,6 +28,7 @@ export const ROUTES = {
     DASHBOARD: '/society/dashboard',
     LOANS: '/society/loans',
     INVESTMENTS: '/society/investments',
+    CD_INVESTMENTS: '/society/cd-investments',
     PROFILE: '/society/profile',
   },
   
