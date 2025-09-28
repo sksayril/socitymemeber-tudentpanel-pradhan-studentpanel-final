@@ -10,7 +10,7 @@ interface AuthContextType {
   kycStatus: KYCStatusResponse | null;
   isKYCVerified: boolean;
   login: (email: string, password: string, id: string, loginMethod: 'email' | 'id', type: 'student' | 'society') => Promise<void>;
-  signup: (data: any, type: 'student' | 'society') => Promise<void>;
+  signup: (data: any, type: 'student' | 'society', profilePicture?: File) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   refreshKYCStatus: () => Promise<void>;
@@ -121,14 +121,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const signup = async (data: any, type: 'student' | 'society') => {
+  const signup = async (data: any, type: 'student' | 'society', profilePicture?: File) => {
     try {
       setIsLoading(true);
       setError(null);
 
       let response;
       if (type === 'student') {
-        response = await apiService.studentSignup(data);
+        response = await apiService.studentSignup(data, profilePicture);
         if (response.data?.student) {
           setUser(response.data.student);
         }

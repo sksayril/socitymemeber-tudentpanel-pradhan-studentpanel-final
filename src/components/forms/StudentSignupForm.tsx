@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, User, Mail, Lock, GraduationCap, Phone, Calendar, MapPin } from 'lucide-react';
+import { Eye, EyeOff, User, Mail, Lock, GraduationCap, Phone, Calendar, MapPin, Camera } from 'lucide-react';
+import FileUpload from '../FileUpload';
 
 interface StudentSignupFormProps {
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: any, profilePicture?: File) => Promise<void>;
   onBack: () => void;
   isLoading: boolean;
   error: string | null;
@@ -38,6 +39,8 @@ const StudentSignupForm: React.FC<StudentSignupFormProps> = ({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [interestsInput, setInterestsInput] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
+  const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const [profilePictureError, setProfilePictureError] = useState<string>('');
 
   const validateField = (name: string, value: string): string => {
     switch (name) {
@@ -57,6 +60,30 @@ const StudentSignupForm: React.FC<StudentSignupFormProps> = ({
       default:
         return '';
     }
+  };
+
+  const validateProfilePicture = (file: File | null): string => {
+    if (!file) return '';
+    
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      return 'Profile picture must be a JPG, JPEG, or PNG file';
+    }
+    
+    // Check file size (10MB = 10 * 1024 * 1024 bytes)
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      return 'Profile picture must be less than 10MB';
+    }
+    
+    return '';
+  };
+
+  const handleProfilePictureSelect = (file: File | null) => {
+    const error = validateProfilePicture(file);
+    setProfilePictureError(error);
+    setProfilePicture(file);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -122,11 +149,21 @@ const StudentSignupForm: React.FC<StudentSignupFormProps> = ({
       return;
     }
 
+    // Validate profile picture if provided
+    if (profilePicture) {
+      const error = validateProfilePicture(profilePicture);
+      if (error) {
+        setProfilePictureError(error);
+        return;
+      }
+    }
+
     // Clear any existing field errors before submission
     setFieldErrors({});
+    setProfilePictureError('');
 
     const { confirmPassword, ...submitData } = formData;
-    await onSubmit(submitData);
+    await onSubmit(submitData, profilePicture || undefined);
   };
 
   const isFormValid = () => {
@@ -145,7 +182,8 @@ const StudentSignupForm: React.FC<StudentSignupFormProps> = ({
       formData.address.state &&
       formData.address.zipCode &&
       formData.password === formData.confirmPassword &&
-      Object.keys(fieldErrors).length === 0
+      Object.keys(fieldErrors).length === 0 &&
+      !profilePictureError
     );
   };
 
@@ -468,6 +506,25 @@ const StudentSignupForm: React.FC<StudentSignupFormProps> = ({
               ))}
             </div>
           )}
+        </div>
+
+        {/* Profile Picture Upload */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Camera className="w-4 h-4 inline mr-2" />
+            Profile Picture (Optional)
+          </label>
+          <FileUpload
+            onFileSelect={handleProfilePictureSelect}
+            accept="image/jpeg,image/jpg,image/png"
+            maxSize={10}
+            label="Upload your profile picture"
+            required={false}
+            error={profilePictureError}
+          />
+          <p className="mt-2 text-xs text-gray-500">
+            Supported formats: JPG, JPEG, PNG. Maximum file size: 10MB
+          </p>
         </div>
 
         {/* Submit Buttons */}

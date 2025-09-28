@@ -10,9 +10,9 @@ const StudentSignupPage: React.FC = () => {
   const navigate = useNavigate();
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
-  const handleSignup = async (data: any) => {
+  const handleSignup = async (data: any, profilePicture?: File) => {
     try {
-      await signup(data, 'student');
+      await signup(data, 'student', profilePicture);
       setShowSuccessPopup(true);
       // Navigate after a short delay to show the popup
       setTimeout(() => {

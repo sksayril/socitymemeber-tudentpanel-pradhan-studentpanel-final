@@ -1527,13 +1527,37 @@ class ApiService {
   }
 
   // Student API methods
-  async studentSignup(data: StudentSignupData): Promise<ApiResponse<{ student: User; token: string }>> {
+  async studentSignup(data: StudentSignupData, profilePicture?: File): Promise<ApiResponse<{ student: User; token: string }>> {
+    // Create FormData for multipart/form-data request
+    const formData = new FormData();
+    
+    // Add all text fields to FormData
+    formData.append('email', data.email);
+    formData.append('password', data.password);
+    formData.append('firstName', data.firstName);
+    formData.append('lastName', data.lastName);
+    formData.append('department', data.department);
+    formData.append('year', data.year);
+    formData.append('phoneNumber', data.phoneNumber);
+    formData.append('dateOfBirth', data.dateOfBirth);
+    
+    // Add address as JSON string
+    formData.append('address', JSON.stringify(data.address));
+    
+    // Add interests as JSON string if provided
+    if (data.interests && data.interests.length > 0) {
+      formData.append('interests', JSON.stringify(data.interests));
+    }
+    
+    // Add profile picture if provided
+    if (profilePicture) {
+      formData.append('profilePicture', profilePicture);
+    }
+
     const response = await fetch(`${API_BASE_URL}/student/signup`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
+      // Don't set Content-Type header - let browser set it with boundary for FormData
+      body: formData,
     });
 
     return this.handleResponse(response);
