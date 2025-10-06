@@ -19,16 +19,16 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
 
   const handleLogin = async (email: string, password: string) => {
     try {
-      await login(email, password, selectedUserType);
+      await login(email, password, email, 'email', selectedUserType);
       onLogin(selectedUserType);
     } catch (err) {
       // Error is handled by the auth context
     }
   };
 
-  const handleSignup = async (data: any) => {
+  const handleSignup = async (data: any, profilePicture?: File) => {
     try {
-      await signup(data, selectedUserType);
+      await signup(data, selectedUserType, profilePicture);
       onLogin(selectedUserType);
     } catch (err) {
       // Error is handled by the auth context

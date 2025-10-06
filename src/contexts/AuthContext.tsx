@@ -152,7 +152,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
         toast.success('Account created successfully! Welcome to EduPortal.');
       } else {
-        response = await apiService.societyMemberSignup(data);
+        response = await apiService.societyMemberSignup(data, profilePicture);
         console.log('Society member signup response:', response);
         
         if (response.data?.member) {

@@ -1612,13 +1612,43 @@ class ApiService {
   }
 
   // Society Member API methods
-  async societyMemberSignup(data: SocietyMemberSignupData): Promise<ApiResponse<{ member: User; token: string }>> {
+  async societyMemberSignup(data: SocietyMemberSignupData, profilePicture?: File): Promise<ApiResponse<{ member: User; token: string }>> {
+    // Create FormData for multipart/form-data request
+    const formData = new FormData();
+    
+    // Add all text fields to FormData
+    formData.append('email', data.email);
+    formData.append('password', data.password);
+    formData.append('firstName', data.firstName);
+    formData.append('lastName', data.lastName);
+    formData.append('societyName', data.societyName);
+    formData.append('position', data.position);
+    formData.append('department', data.department);
+    formData.append('phoneNumber', data.phoneNumber);
+    formData.append('dateOfBirth', data.dateOfBirth);
+    
+    // Add address as JSON string
+    formData.append('address', JSON.stringify(data.address));
+    
+    // Add skills as JSON string if provided
+    if (data.skills && data.skills.length > 0) {
+      formData.append('skills', JSON.stringify(data.skills));
+    }
+    
+    // Add responsibilities as JSON string if provided
+    if (data.responsibilities && data.responsibilities.length > 0) {
+      formData.append('responsibilities', JSON.stringify(data.responsibilities));
+    }
+    
+    // Add profile picture if provided
+    if (profilePicture) {
+      formData.append('profilePicture', profilePicture);
+    }
+
     const response = await fetch(`${API_BASE_URL}/society-member/signup`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
+      // Don't set Content-Type header - let browser set it with boundary for FormData
+      body: formData,
     });
 
     return this.handleResponse(response);

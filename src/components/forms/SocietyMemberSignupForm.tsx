@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, User, Mail, Lock, Building2, Phone, Calendar, MapPin, Award, Users } from 'lucide-react';
+import { Eye, EyeOff, User, Mail, Lock, Building2, Phone, Calendar, MapPin, Award, Users, Camera } from 'lucide-react';
+import FileUpload from '../FileUpload';
 
 interface SocietyMemberSignupFormProps {
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: any, profilePicture?: File) => Promise<void>;
   onBack: () => void;
   isLoading: boolean;
   error: string | null;
@@ -41,6 +42,7 @@ const SocietyMemberSignupForm: React.FC<SocietyMemberSignupFormProps> = ({
   const [skillsInput, setSkillsInput] = useState('');
   const [responsibilitiesInput, setResponsibilitiesInput] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{[key: string]: string}>({});
+  const [profilePicture, setProfilePicture] = useState<File | null>(null);
 
   const validateField = (name: string, value: string): string => {
     switch (name) {
@@ -150,7 +152,7 @@ const SocietyMemberSignupForm: React.FC<SocietyMemberSignupFormProps> = ({
     setFieldErrors({});
 
     const { confirmPassword, ...submitData } = formData;
-    await onSubmit(submitData);
+    await onSubmit(submitData, profilePicture || undefined);
   };
 
   const isFormValid = () => {
@@ -552,6 +554,40 @@ const SocietyMemberSignupForm: React.FC<SocietyMemberSignupFormProps> = ({
                   </button>
                 </span>
               ))}
+            </div>
+          )}
+        </div>
+
+        {/* Profile Picture Upload */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <Camera className="w-4 h-4 inline mr-2" />
+            Profile Picture (Optional)
+          </label>
+          <FileUpload
+            onFileSelect={setProfilePicture}
+            accept="image/jpeg,image/jpg,image/png,image/gif"
+            maxSize={5}
+            label=""
+            required={false}
+          />
+          {profilePicture && (
+            <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm font-medium text-green-800">
+                    File selected: {profilePicture.name}
+                  </p>
+                  <p className="text-sm text-green-700">
+                    Size: {(profilePicture.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                </div>
+              </div>
             </div>
           )}
         </div>
