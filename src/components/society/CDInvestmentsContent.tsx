@@ -252,7 +252,10 @@ const CDInvestmentsContent: React.FC = () => {
       {/* Request Form Modal */}
       {showRequestForm && (
         <CDInvestmentRequestForm
-          onSubmit={handleRequestInvestment}
+          onSubmit={(data) => {
+            handleRequestInvestment(data);
+            setShowRequestForm(false);
+          }}
           onClose={() => setShowRequestForm(false)}
         />
       )}
@@ -275,22 +278,71 @@ const CDInvestmentRequestForm: React.FC<CDInvestmentRequestFormProps> = ({ onSub
   });
 
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
+
+  const validateField = (name: string, value: string): string => {
+    switch (name) {
+      case 'investmentAmount':
+        if (!value || value.trim() === '') {
+          return 'Investment amount is required';
+        }
+        const amount = parseFloat(value);
+        if (isNaN(amount)) {
+          return 'Please enter a valid number';
+        }
+        if (amount <= 300) {
+          return 'Investment amount must be greater than ₹300';
+        }
+        return '';
+      case 'tenureMonths':
+        if (!value || value === '') {
+          return 'Tenure is required';
+        }
+        return '';
+      case 'purpose':
+        if (!value || value.trim() === '') {
+          return 'Purpose is required';
+        }
+        return '';
+      default:
+        return '';
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.investmentAmount || !formData.tenureMonths || !formData.purpose) {
-      toast.error('Please fill in all required fields');
+    // Validate all fields
+    const newErrors: {[key: string]: string} = {};
+    const amountError = validateField('investmentAmount', formData.investmentAmount);
+    const tenureError = validateField('tenureMonths', formData.tenureMonths);
+    const purposeError = validateField('purpose', formData.purpose);
+
+    if (amountError) newErrors.investmentAmount = amountError;
+    if (tenureError) newErrors.tenureMonths = tenureError;
+    if (purposeError) newErrors.purpose = purposeError;
+
+    setErrors(newErrors);
+
+    // If there are errors, don't submit
+    if (Object.keys(newErrors).length > 0) {
+      toast.error('Please fix the validation errors before submitting');
+      return;
+    }
+
+    const amount = parseFloat(formData.investmentAmount);
+    if (amount <= 300) {
+      toast.error('Investment amount must be greater than ₹300');
       return;
     }
 
     setLoading(true);
     try {
       await onSubmit({
-        investmentAmount: parseFloat(formData.investmentAmount),
+        investmentAmount: amount,
         tenureMonths: parseInt(formData.tenureMonths),
-        purpose: formData.purpose,
-        notes: formData.notes,
+        purpose: formData.purpose.trim(),
+        notes: formData.notes.trim(),
       });
     } finally {
       setLoading(false);
@@ -299,10 +351,40 @@ const CDInvestmentRequestForm: React.FC<CDInvestmentRequestFormProps> = ({ onSub
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    // Clear error for this field when user starts typing
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]: value,
     }));
+    
+    // Real-time validation for investment amount
+    if (name === 'investmentAmount') {
+      const error = validateField(name, value);
+      if (error) {
+        setErrors(prev => ({ ...prev, [name]: error }));
+      }
+    }
+  };
+
+  const handleClose = () => {
+    // Reset form when closing
+    setFormData({
+      investmentAmount: '',
+      tenureMonths: '',
+      purpose: '',
+      notes: '',
+    });
+    setErrors({});
+    onClose();
   };
 
   return (
@@ -323,11 +405,22 @@ const CDInvestmentRequestForm: React.FC<CDInvestmentRequestFormProps> = ({ onSub
               name="investmentAmount"
               value={formData.investmentAmount}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="Enter investment amount"
-              min="1000"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                errors.investmentAmount 
+                  ? 'border-red-300 bg-red-50' 
+                  : 'border-gray-300'
+              }`}
+              placeholder="Enter investment amount (minimum ₹301)"
+              min="301"
+              step="1"
               required
             />
+            {errors.investmentAmount && (
+              <p className="mt-1 text-sm text-red-600">{errors.investmentAmount}</p>
+            )}
+            {!errors.investmentAmount && formData.investmentAmount && (
+              <p className="mt-1 text-xs text-gray-500">Minimum investment amount is ₹301</p>
+            )}
           </div>
 
           <div>
@@ -338,7 +431,11 @@ const CDInvestmentRequestForm: React.FC<CDInvestmentRequestFormProps> = ({ onSub
               name="tenureMonths"
               value={formData.tenureMonths}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                errors.tenureMonths 
+                  ? 'border-red-300 bg-red-50' 
+                  : 'border-gray-300'
+              }`}
               required
             >
               <option value="">Select tenure</option>
@@ -347,7 +444,12 @@ const CDInvestmentRequestForm: React.FC<CDInvestmentRequestFormProps> = ({ onSub
               <option value="18">18 months</option>
               <option value="24">24 months</option>
               <option value="36">36 months</option>
+              <option value="60">60 months</option>
+              <option value="90">90 months</option>
             </select>
+            {errors.tenureMonths && (
+              <p className="mt-1 text-sm text-red-600">{errors.tenureMonths}</p>
+            )}
           </div>
 
           <div>
@@ -359,10 +461,17 @@ const CDInvestmentRequestForm: React.FC<CDInvestmentRequestFormProps> = ({ onSub
               name="purpose"
               value={formData.purpose}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                errors.purpose 
+                  ? 'border-red-300 bg-red-50' 
+                  : 'border-gray-300'
+              }`}
               placeholder="e.g., Education fund, Emergency fund"
               required
             />
+            {errors.purpose && (
+              <p className="mt-1 text-sm text-red-600">{errors.purpose}</p>
+            )}
           </div>
 
           <div>
@@ -382,14 +491,14 @@ const CDInvestmentRequestForm: React.FC<CDInvestmentRequestFormProps> = ({ onSub
           <div className="flex space-x-4 pt-4">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || Object.keys(errors).length > 0 || !formData.investmentAmount || !formData.tenureMonths || !formData.purpose}
               className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               {loading ? 'Submitting...' : 'Submit Request'}

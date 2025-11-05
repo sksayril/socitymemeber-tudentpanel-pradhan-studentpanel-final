@@ -52,8 +52,14 @@ const PaymentHistoryContent: React.FC = () => {
       console.log('Payment history response:', response);
       
       if (response.data) {
-        setPayments(response.data.paymentHistory);
-        setPagination(response.data.pagination);
+        setPayments(response.data.paymentHistory || []);
+        setPagination(response.data.pagination || {
+          currentPage: 1,
+          totalPages: 1,
+          totalPayments: 0,
+          hasNext: false,
+          hasPrev: false
+        });
       }
     } catch (err) {
       console.error('Error fetching payment history:', err);
@@ -66,6 +72,8 @@ const PaymentHistoryContent: React.FC = () => {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch payment history';
       setError(errorMessage);
       toast.error(errorMessage);
+      // Ensure payments is always an array even on error
+      setPayments([]);
     } finally {
       setIsLoading(false);
     }
@@ -308,7 +316,16 @@ const PaymentHistoryContent: React.FC = () => {
     </div>
   );
 
-  if (isLoading && payments.length === 0) {
+  const safePayments = payments || [];
+  const safePagination = pagination || {
+    currentPage: 1,
+    totalPages: 1,
+    totalPayments: 0,
+    hasNext: false,
+    hasPrev: false
+  };
+
+  if (isLoading && safePayments.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
@@ -317,7 +334,7 @@ const PaymentHistoryContent: React.FC = () => {
     );
   }
 
-  if (error && payments.length === 0) {
+  if (error && safePayments.length === 0) {
     return (
       <div className="text-center py-12">
         <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-4" />
@@ -351,7 +368,7 @@ const PaymentHistoryContent: React.FC = () => {
       {renderFilters()}
 
       {/* Payment History */}
-      {payments.length === 0 ? (
+      {safePayments.length === 0 ? (
         <div className="text-center py-12">
           <History className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">No Payment History</h3>
@@ -360,25 +377,25 @@ const PaymentHistoryContent: React.FC = () => {
       ) : (
         <>
           <div className="grid gap-6">
-            {payments.map(renderPaymentCard)}
+            {safePayments.map(renderPaymentCard)}
           </div>
           
           {/* Pagination */}
-          {pagination.totalPages > 1 && (
+          {safePagination.totalPages > 1 && (
             <div className="flex items-center justify-center space-x-2">
               <button
                 onClick={() => setFilters(prev => ({ ...prev, page: (prev.page || 1) - 1 }))}
-                disabled={!pagination.hasPrev}
+                disabled={!safePagination.hasPrev}
                 className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Previous
               </button>
               <span className="px-4 py-2 text-gray-700">
-                Page {pagination.currentPage} of {pagination.totalPages}
+                Page {safePagination.currentPage} of {safePagination.totalPages}
               </span>
               <button
                 onClick={() => setFilters(prev => ({ ...prev, page: (prev.page || 1) + 1 }))}
-                disabled={!pagination.hasNext}
+                disabled={!safePagination.hasNext}
                 className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
